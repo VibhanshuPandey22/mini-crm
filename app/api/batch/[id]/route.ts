@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const DELETE = async (
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) => {
-  const { id } = params; // batchId
+  const { id } = context.params; // batchId
 
   try {
     // Step 1: Get all campaign IDs for this batch
@@ -54,9 +54,9 @@ export const DELETE = async (
 
 export const PATCH = async (
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) => {
-  const { id } = await params;
+  const { id } = context.params; // Retrieve the id from params
   const data = await req.json();
   const { newBatchName } = data;
 
@@ -77,7 +77,3 @@ export const PATCH = async (
     );
   }
 };
-
-// await prismaClient.campaign.deleteMany({
-//   where: { batchId: id },
-// });

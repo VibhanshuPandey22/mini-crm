@@ -6,10 +6,10 @@ const prisma = new PrismaClient();
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = context.params;
     const logs = await prisma.deliveryLog.findMany({
       where: { communicationLogId: id },
       orderBy: { createdAt: "desc" }, // optional: show latest first

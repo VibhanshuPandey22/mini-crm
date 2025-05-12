@@ -1,32 +1,27 @@
 import { prismaClient } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 
-interface Customer {
-  id: string;
-  name: string;
-  userId: string;
-}
+// PATCH handler to update campaign status
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } } // Correctly use context for dynamic params
 ) {
-  const { id } = await params; //this id is the communication log id.
+  const { id } = context.params; // This id is the communication log id.
   const data = await req.json();
   const newStatus = data.status;
 
   try {
     const campaign = await prismaClient.communicationLog.findUnique({
-      where: { id: id },
+      where: { id },
     });
+
     if (!campaign) {
       return NextResponse.json(
-        {
-          success: false,
-          message: "Campaign not found",
-        },
+        { success: false, message: "Campaign not found" },
         { status: 404 }
       );
     }
+
     const campaignId = campaign.campaignId;
 
     try {
@@ -37,45 +32,45 @@ export async function PATCH(
         },
       });
       return NextResponse.json(
-        {
-          success: true,
-          message: "Successfully updated the campaign status",
-        },
+        { success: true, message: "Successfully updated the campaign status" },
         { status: 200 }
       );
     } catch (error) {
-      console.log(error);
+      console.error("Error updating campaign status:", error);
       return NextResponse.json(
         {
-          success: true,
-          message: "Successfully updated the campaign status",
+          success: false,
+          message: "Error updating the campaign status",
+          error: error instanceof Error ? error.message : "Unknown error",
         },
-        { status: 200 }
+        { status: 500 }
       );
     }
   } catch (error) {
-    console.log(error);
+    console.error("Error in PATCH handler:", error);
     return NextResponse.json(
       {
         success: false,
-        message: "Something went wrong",
+        message: "Something went wrong while updating the campaign status",
+        error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );
   }
 }
 
+// POST handler to create delivery logs
 interface Customer {
+  id: string;
   name: string;
   userId: string;
-  id: string;
 }
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } } // Correct context usage for dynamic route params
 ) {
-  const { id } = params;
+  const { id } = context.params; // Extract id from context
 
   try {
     const log = await prismaClient.communicationLog.findUnique({
@@ -136,6 +131,7 @@ export async function POST(
           error instanceof Error
             ? error.message
             : "Failed to create delivery logs",
+        error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );
