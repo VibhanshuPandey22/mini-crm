@@ -4,9 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 // PATCH handler to update campaign status
 export async function PATCH(
   req: NextRequest,
-  context: { params: { id: string } } // Correctly use context for dynamic params
+  { params }: { params: Promise<{ id: string }> } // Correctly use context for dynamic params
 ) {
-  const { id } = context.params; // This id is the communication log id.
+  const { id } = await params; // This id is the communication log id.
   const data = await req.json();
   const newStatus = data.status;
 
@@ -68,9 +68,9 @@ interface Customer {
 
 export async function POST(
   req: NextRequest,
-  context: { params: { id: string } } // Correct context usage for dynamic route params
+  { params }: { params: Promise<{ id: string }> } // Correct context usage for dynamic route params
 ) {
-  const { id } = context.params; // Extract id from context
+  const { id } = await params; // Extract id from context
 
   try {
     const log = await prismaClient.communicationLog.findUnique({

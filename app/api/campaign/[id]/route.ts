@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
   req: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = context.params;
+  const { id } = await params;
   const data = await req.json();
   const { newNote, newMessage } = data;
 
@@ -98,9 +98,9 @@ export async function PATCH(
 
 export const DELETE = async (
   req: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) => {
-  const { id } = context.params; //this is the campaign id
+  const { id } = await params; //this is the campaign id
   console.log(id);
   try {
     // Step 1: Find all campaign IDs associated with the batch

@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const DELETE = async (
   req: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) => {
-  const { id } = context.params; // batchId
+  const { id } = await params; // batchId
 
   try {
     // Step 1: Get all campaign IDs for this batch
@@ -54,9 +54,9 @@ export const DELETE = async (
 
 export const PATCH = async (
   req: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) => {
-  const { id } = context.params; // Retrieve the id from params
+  const { id } = await params; // Retrieve the id from params
   const data = await req.json();
   const { newBatchName } = data;
 
