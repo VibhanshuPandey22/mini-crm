@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CampaignStatus {
+  Ready
+  Completed
+  Failed
+}
+
+enum DeliveryStatus {
+  Sent
+  Failed
+}
+
+enum ConditionType {
+  AND
+  OR
+}
+
+model User {
+  id            String     @id @default(uuid())
+  email         String     @unique
+  name          String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  customerData  CustomerData[]
+  campaigns     Campaign[]
+  batches       Batches[]
+  communicationLogs CommunicationLog[]
+  deliveryLogs  DeliveryLog[] 
+}
+
+model Batches {
+  id            String        @id @default(uuid())
+  userId        String
+  batchName     String        @default("Unnamed Batch")
+  createdAt     DateTime      @default(now())  
+  updatedAt     DateTime      @updatedAt
+  user          User          @relation(fields: [userId], references: [id])
+  customerData  CustomerData[]
+  campaigns     Campaign[]
+  communicationLogs CommunicationLog[]
+}
+
+model CustomerData {
+  id            String        @id @default(uuid())
+  userId        String
+  batchId       String
+  customerId    String
+  name          String?
+  email         String?
+  phone         String?
+  location      String?
+  amountSpent   Float         @default(0)
+  lastLoggedIn  DateTime?
+  lastOrderDate DateTime?
+  createdAt     DateTime      @default(now())
+
+  user          User          @relation(fields: [userId], references: [id])
+  batch         Batches       @relation(fields: [batchId], references: [id])
+
+  @@index([customerId])
+}
+
+model Campaign {
+  id                  String             @id @default(uuid())
+  userId              String
+  batchId             String        
+  name                String
+  message             String
+  status              CampaignStatus     @default(Ready)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  user                User               @relation(fields: [userId], references: [id])
+  batch               Batches            @relation(fields: [batchId], references: [id])
+  communicationLog    CommunicationLog?  @relation(name: "CampaignToCommunicationLog")
+
+  DeliveryLog DeliveryLog[]
+}
+
+model CommunicationLog {
+  id            String     @id @default(uuid())
+  campaignId    String     @unique
+  userId        String
+  batchId       String     
+  deliveryTime  DateTime   @default(now())
+  notes         String?
+  count         Int
+  audience      Json
+
+  campaign      Campaign   @relation(name: "CampaignToCommunicationLog", fields: [campaignId], references: [id])
+  user          User       @relation(fields: [userId], references: [id])
+  batch         Batches    @relation(fields: [batchId], references: [id]) 
+
+  @@index([batchId])
+  DeliveryLog DeliveryLog[]
+}
+
+model DeliveryLog {
+  id                  String           @id @default(uuid())
+  customerName        String
+  message             String
+  status              DeliveryStatus
+  createdAt           DateTime         @default(now())
+  userId              String
+  user                User             @relation(fields: [userId], references: [id])
+
+  campaignId          String
+  campaign            Campaign         @relation(fields: [campaignId], references: [id])
+
+  communicationLogId  String
+  communicationLog    CommunicationLog @relation(fields: [communicationLogId], references: [id])
+
+  @@index([userId])
+  @@index([campaignId])
+  @@index([communicationLogId])
+}
+
